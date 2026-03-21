@@ -162,6 +162,7 @@ class ContextAnalyzer:
         context_text = "\n".join(messages)
 
         # 构建可用的表情包类别列表（包含描述）
+        available_emotions = list(self._category_mapping.keys())
         emotions_list = "\n".join(
             [f"- {emotion}: {desc}" for emotion, desc in self._category_mapping.items()]
         )
