@@ -6,19 +6,19 @@
 import os
 import time
 
+from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent
 
 from ..backend.category_manager import CategoryManager
 from ..config import MEMES_DIR
-from ..constants import SUPPORTED_PLATFORM
+from ..constants import LOG_PREFIX, SUPPORTED_PLATFORM
 from ..services.meme_service import MemeService
 from ..types import UploadState
 from ..utils.image_utils import ImageUtils
 from ..utils.message_utils import MessageUtils
-from .base_handler import BaseHandler
 
 
-class CommandHandler(BaseHandler):
+class CommandHandler:
     """命令处理器。
 
     负责处理表情包管理相关的命令，包括查看图库、添加表情、图库统计等。
@@ -40,7 +40,7 @@ class CommandHandler(BaseHandler):
             category_manager: 类别管理器
             meme_service: 表情包服务
         """
-        super().__init__("CommandHandler")
+        self.name = "CommandHandler"
         self.category_manager = category_manager
         self.meme_service = meme_service
         self.upload_states: dict[str, UploadState] = {}
@@ -149,7 +149,7 @@ class CommandHandler(BaseHandler):
                         saved_files.append(filename)
 
                 except Exception as e:
-                    self.log_error(f"处理图片失败: {e}")
+                    logger.error(f"{LOG_PREFIX} 处理图片失败: {e}")
                     continue
 
             # 清理上传状态
@@ -167,7 +167,7 @@ class CommandHandler(BaseHandler):
                 )
 
         except Exception as e:
-            self.log_error(f"保存图片失败: {e}")
+            logger.error(f"{LOG_PREFIX} 保存图片失败: {e}")
             yield event.plain_result(f"保存失败了：{str(e)}")
 
     async def show_stats(self, event: AstrMessageEvent):
@@ -204,7 +204,7 @@ class CommandHandler(BaseHandler):
             yield event.plain_result("\n".join(result))
 
         except Exception as e:
-            self.log_error(f"获取图库统计失败: {e}")
+            logger.error(f"{LOG_PREFIX} 获取图库统计失败: {e}")
             yield event.plain_result(f"获取图库统计失败: {str(e)}")
 
     def _get_user_key(self, event: AstrMessageEvent) -> str:
@@ -230,4 +230,4 @@ class CommandHandler(BaseHandler):
             del self.upload_states[key]
 
         if expired_keys:
-            self.log_debug(f"清理了 {len(expired_keys)} 个过期上传状态")
+            logger.debug(f"{LOG_PREFIX} 清理了 {len(expired_keys)} 个过期上传状态")
