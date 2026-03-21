@@ -222,9 +222,19 @@ class ContextAnalyzer:
                 result = emotion_match.group(1).lower().strip()
                 reason = reason_match.group(1).strip() if reason_match else "未提供"
             else:
-                # 回退到旧格式：只返回类别名称
-                result = cleaned_result.lower()
-                result = re.sub(r"[^\w]", "", result)
+                # 回退到旧格式：提取最后一个有效单词作为类别名称
+                # 按行分割，取最后一行，然后提取第一个单词
+                lines = [line.strip() for line in cleaned_result.split('\n') if line.strip()]
+                if lines:
+                    last_line = lines[-1]
+                    # 提取第一个单词（只保留字母）
+                    word_match = re.search(r"[a-zA-Z]+", last_line)
+                    if word_match:
+                        result = word_match.group(0).lower()
+                    else:
+                        result = ""
+                else:
+                    result = ""
                 reason = "未提供"
 
             logger.debug(f"{LOG_PREFIX} 🤖 LLM 解析结果: 类别={result}, 原因={reason}")
