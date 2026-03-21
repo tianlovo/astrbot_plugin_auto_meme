@@ -73,8 +73,8 @@ class MemeAutoPlugin(Star):
             convert_static_to_gif=basic_config.convert_static_to_gif
         )
         self.llm_service = LLMService(
-            context=context,
             config=llm_config,
+            context=context,
             category_mapping=category_mapping,
         )
 
