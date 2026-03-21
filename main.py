@@ -9,6 +9,8 @@ from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.event.filter import EventMessageType
 from astrbot.api.star import Context, Star, register
 
+from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
+
 from .backend.category_manager import CategoryManager
 from .config import DEFAULT_CATEGORY_DESCRIPTIONS, MEMES_DATA_PATH
 from .constants import LOG_PREFIX
@@ -105,14 +107,28 @@ class MemeAutoPlugin(Star):
             f"触发间隔: {basic_config.trigger_interval}, "
             f"LLM分析: {llm_config.use_llm_analysis}"
         )
+        logger.info(
+            f"{LOG_PREFIX} 消息监听已启动 - 使用 EventMessageType.ALL 过滤器"
+        )
 
-    @filter.event_message_type(EventMessageType.GROUP_MESSAGE)
-    async def on_group_message(self, event: AstrMessageEvent):
-        """处理群消息事件。
+    @filter.event_message_type(EventMessageType.ALL)
+    async def on_all_message(self, event: AstrMessageEvent):
+        """处理所有消息事件。
+
+        捕获所有消息，过滤出 aiocqhttp 平台的群消息进行处理。
 
         Args:
             event: AstrBot 消息事件
         """
+        # 只处理 aiocqhttp 平台的消息
+        if event.get_platform_name() != "aiocqhttp":
+            return
+
+        # 只处理群消息
+        if not event.get_group_id():
+            return
+
+        # 处理群消息
         await self.group_message_handler.handle(event)
 
     @filter.command_group("表情管理")
