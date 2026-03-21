@@ -43,7 +43,12 @@ class GroupContextService:
             当前消息计数
         """
         count = self.context_manager.add_message(group_id, message)
-        logger.debug(f"{LOG_PREFIX} 群 {group_id} 消息计数: {count}")
+        current_window = self.context_manager.get_context(group_id)
+        logger.debug(
+            f"{LOG_PREFIX} 📥 消息已添加到滑动窗口 | 群: {group_id} | "
+            f"计数: {count}/{self.config.trigger_interval} | "
+            f"窗口消息数: {len(current_window)}/{self.config.window_size}"
+        )
         return count
 
     def should_trigger(self, group_id: str, interval: int = None) -> bool:
@@ -57,10 +62,18 @@ class GroupContextService:
             是否应触发
         """
         trigger_interval = interval or self.config.trigger_interval
+        counter = self.context_manager.counters.get(group_id, 0)
         should_trigger = self.context_manager.should_trigger(group_id, trigger_interval)
+
         if should_trigger:
+            logger.info(
+                f"{LOG_PREFIX} 🎯 触发条件满足 | 群: {group_id} | "
+                f"计数: {counter}/{trigger_interval}"
+            )
+        else:
             logger.debug(
-                f"{LOG_PREFIX} 群 {group_id} 满足触发条件（间隔: {trigger_interval}）"
+                f"{LOG_PREFIX} ⏳ 触发条件未满足 | 群: {group_id} | "
+                f"计数: {counter}/{trigger_interval}"
             )
         return should_trigger
 

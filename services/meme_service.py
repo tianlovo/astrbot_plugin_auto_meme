@@ -125,26 +125,41 @@ class MemeService:
         Returns:
             发送是否成功
         """
+        logger.info(f"{LOG_PREFIX} 🖼️ 开始获取表情包 | 类别: {emotion}")
+
         meme_info = self.get_random_meme(emotion)
         if not meme_info:
+            logger.warning(f"{LOG_PREFIX} ⚠️ 无法获取表情包 | 类别 '{emotion}' 不存在或为空")
             return False
+
+        logger.info(
+            f"{LOG_PREFIX} ✅ 选中表情包 | 类别: {meme_info.emotion} | "
+            f"文件: {meme_info.filename}"
+        )
 
         final_meme_file = self.convert_to_gif(meme_info.path)
 
+        if final_meme_file != meme_info.path:
+            logger.debug(f"{LOG_PREFIX} 🔄 图片已转换为 GIF: {final_meme_file}")
+
         try:
+            logger.info(f"{LOG_PREFIX} 📤 正在发送表情包...")
             await event.send(MessageChain([Image.fromFileSystem(final_meme_file)]))
-            logger.info(f"{LOG_PREFIX} 已发送表情包: {emotion}/{meme_info.filename}")
+            logger.info(
+                f"{LOG_PREFIX} ✅ 表情包发送成功 | 类别: {emotion} | 文件: {meme_info.filename}"
+            )
 
             # 清理临时文件
             if final_meme_file != meme_info.path and os.path.exists(final_meme_file):
                 try:
                     os.remove(final_meme_file)
-                except Exception:
-                    pass
+                    logger.debug(f"{LOG_PREFIX} 🗑️ 临时文件已清理: {final_meme_file}")
+                except Exception as e:
+                    logger.debug(f"{LOG_PREFIX} ⚠️ 清理临时文件失败: {e}")
 
             return True
         except Exception as e:
-            logger.error(f"{LOG_PREFIX} 发送表情包失败: {e}")
+            logger.error(f"{LOG_PREFIX} ❌ 发送表情包失败: {e}")
             return False
 
     def get_available_emotions(self) -> list[str]:

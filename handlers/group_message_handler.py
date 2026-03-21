@@ -58,54 +58,108 @@ class GroupMessageHandler(BaseHandler):
         Returns:
             是否成功处理（是否发送了表情包）
         """
+        # 获取基础信息
+        platform = event.get_platform_name()
+        group_id = event.get_group_id()
+        sender_id = event.get_sender_id()
+        sender_name = event.get_sender_name()
+
+        self.log_info(
+            f"📩 收到消息 | 平台: {platform} | 群: {group_id} | 用户: {sender_name}({sender_id})"
+        )
+
         # 检查平台支持
-        if event.get_platform_name() != SUPPORTED_PLATFORM:
+        if platform != SUPPORTED_PLATFORM:
+            self.log_debug(f"⏭️ 跳过: 平台 {platform} 不受支持 (仅支持 {SUPPORTED_PLATFORM})")
             return False
 
         # 获取群号
-        group_id = event.get_group_id()
         if not group_id:
+            self.log_debug("⏭️ 跳过: 无法获取群号")
             return False
 
         # 检查群白名单
         if not self.context_service.is_group_enabled(group_id):
+            enabled_groups = self.config.enabled_groups
+            self.log_debug(
+                f"⏭️ 跳过: 群 {group_id} 不在白名单中 | 当前白名单: {enabled_groups if enabled_groups else '全部允许'}"
+            )
             return False
+
+        self.log_info(f"✅ 群 {group_id} 在白名单中，开始处理")
 
         # 格式化消息
         message_text = MessageUtils.format_message(event)
         if not message_text:
+            self.log_debug("⏭️ 跳过: 消息内容为空")
             return False
+
+        self.log_info(f"📝 消息内容: {message_text[:50]}{'...' if len(message_text) > 50 else ''}")
 
         # 添加到滑动窗口
         count = self.context_service.add_message(group_id, message_text)
-        self.log_debug(f"群 {group_id} 消息计数: {count}")
+        self.log_info(
+            f"📊 群 {group_id} 滑动窗口 | 当前计数: {count}/{self.config.trigger_interval} | "
+            f"窗口大小: {self.config.window_size}"
+        )
 
         # 检查是否应触发
         if not self.context_service.should_trigger(
             group_id, self.config.trigger_interval
         ):
+            self.log_debug(
+                f"⏳ 未达触发条件 | 当前: {count}/{self.config.trigger_interval}"
+            )
             return False
+
+        self.log_info(f"🎯 群 {group_id} 满足触发间隔条件")
 
         # 重置计数器
         self.context_service.reset_counter(group_id)
+        self.log_debug(f"🔄 群 {group_id} 计数器已重置")
 
         # 概率判断
-        if random.randint(1, 100) > self.config.trigger_probability:
-            self.log_debug("概率未通过，不发送表情包")
+        roll = random.randint(1, 100)
+        if roll > self.config.trigger_probability:
+            self.log_info(
+                f"🎲 概率判定未通过 | 随机数: {roll} | 需要: ≤{self.config.trigger_probability}"
+            )
             return False
 
-        try:
-            # 分析语境并发送表情包
-            context = self.context_service.get_context(group_id)
-            emotion = await self.analyzer.analyze(context, event)
+        self.log_info(
+            f"🎲 概率判定通过 | 随机数: {roll} | 阈值: {self.config.trigger_probability}"
+        )
 
-            self.log_info(f"群 {group_id} 触发表情包发送，选择类别: {emotion}")
+        try:
+            # 获取语境并分析
+            context = self.context_service.get_context(group_id)
+            context_text = self.context_service.get_context_text(group_id)
+            self.log_info(
+                f"📚 群 {group_id} 语境分析 | 窗口消息数: {len(context)} | "
+                f"分析策略: {'LLM' if self.analyzer._use_llm_analysis else '关键词'}"
+            )
+            self.log_debug(f"📄 语境内容:\n{context_text}")
+
+            # 分析语境
+            emotion = await self.analyzer.analyze(event, context)
+
+            self.log_info(f"🎭 语境分析结果: {emotion}")
+
+            # 发送表情包
+            self.log_info(f"📤 正在发送表情包: {emotion}")
             success = await self.meme_service.send_meme(event, emotion)
+
+            if success:
+                self.log_info(f"✅ 群 {group_id} 表情包发送成功")
+            else:
+                self.log_warning(f"⚠️ 群 {group_id} 表情包发送失败")
 
             return success
 
         except Exception as e:
-            self.log_error(f"处理群消息失败: {e}")
+            self.log_error(f"❌ 处理群消息时发生错误: {e}")
+            import traceback
+            self.log_debug(f"错误堆栈:\n{traceback.format_exc()}")
             return False
 
     def update_config(self, config: BasicConfig):

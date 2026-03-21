@@ -74,6 +74,11 @@ class ContextAnalyzer:
         Returns:
             str: 表情包类别名称
         """
+        logger.info(
+            f"{LOG_PREFIX} 🔍 开始语境分析 | 策略: {'LLM' if self._use_llm_analysis else '关键词'} | "
+            f"消息数: {len(messages)} | 可用类别: {len(self._category_mapping)}"
+        )
+
         if self._use_llm_analysis:
             return await self._analyze_by_llm(event, messages)
         else:
@@ -92,10 +97,13 @@ class ContextAnalyzer:
             str: 表情包类别名称
         """
         if not messages:
-            return random.choice(list(self._category_mapping.keys()))
+            selected = random.choice(list(self._category_mapping.keys()))
+            logger.info(f"{LOG_PREFIX} 📭 消息为空，随机选择: {selected}")
+            return selected
 
         # 合并所有消息文本
         context_text = "\n".join(messages)
+        logger.debug(f"{LOG_PREFIX} 📝 分析文本长度: {len(context_text)} 字符")
 
         # 统计每个类别的关键词匹配次数
         scores: dict[str, int] = {}
@@ -103,23 +111,31 @@ class ContextAnalyzer:
             if emotion not in self._category_mapping:
                 continue
             score = 0
+            matched_keywords = []
             for keyword in keywords:
                 count = len(re.findall(re.escape(keyword), context_text, re.IGNORECASE))
-                score += count
+                if count > 0:
+                    score += count
+                    matched_keywords.append(f"{keyword}({count})")
             if score > 0:
                 scores[emotion] = score
+                logger.debug(f"{LOG_PREFIX} 🎯 类别 '{emotion}' 匹配: {matched_keywords} = {score}分")
 
         if not scores:
             # 没有匹配到关键词，随机选择
-            logger.debug(f"{LOG_PREFIX} 关键词分析未匹配，随机选择类别")
-            return random.choice(list(self._category_mapping.keys()))
+            selected = random.choice(list(self._category_mapping.keys()))
+            logger.info(f"{LOG_PREFIX} 🎲 关键词分析未匹配，随机选择: {selected}")
+            return selected
 
         # 选择得分最高的类别
         max_score = max(scores.values())
         best_emotions = [e for e, s in scores.items() if s == max_score]
         selected = random.choice(best_emotions)
 
-        logger.debug(f"{LOG_PREFIX} 关键词分析结果: {selected} (得分: {max_score})")
+        logger.info(
+            f"{LOG_PREFIX} 🏆 关键词分析结果: {selected} | 得分: {max_score} | "
+            f"候选: {best_emotions}"
+        )
         return selected
 
     async def _analyze_by_llm(
@@ -138,7 +154,9 @@ class ContextAnalyzer:
             str: 表情包类别名称
         """
         if not messages:
-            return random.choice(list(self._category_mapping.keys()))
+            selected = random.choice(list(self._category_mapping.keys()))
+            logger.info(f"{LOG_PREFIX} 📭 消息为空，随机选择: {selected}")
+            return selected
 
         # 合并所有消息文本
         context_text = "\n".join(messages)
@@ -147,17 +165,23 @@ class ContextAnalyzer:
         available_emotions = list(self._category_mapping.keys())
         emotions_list = ", ".join(available_emotions)
 
+        logger.debug(f"{LOG_PREFIX} 🤖 可用类别: {emotions_list}")
+
         # 构建系统提示词
         if self._system_prompt:
             system_prompt = self._system_prompt.format(emotions_list=emotions_list)
+            logger.debug(f"{LOG_PREFIX} 📝 使用自定义系统提示词")
         else:
             system_prompt = DEFAULT_SYSTEM_PROMPT.format(emotions_list=emotions_list)
+            logger.debug(f"{LOG_PREFIX} 📝 使用默认系统提示词")
 
         # 构建用户提示词
         if self._user_prompt:
             user_prompt = self._user_prompt.format(context_text=context_text)
+            logger.debug(f"{LOG_PREFIX} 📝 使用自定义用户提示词")
         else:
             user_prompt = DEFAULT_USER_PROMPT.format(context_text=context_text)
+            logger.debug(f"{LOG_PREFIX} 📝 使用默认用户提示词")
 
         try:
             # 获取当前会话的 Provider ID
@@ -167,8 +191,10 @@ class ContextAnalyzer:
             )
 
             if not provider_id:
-                logger.warning(f"{LOG_PREFIX} 无法获取 LLM provider ID，使用关键词分析")
+                logger.warning(f"{LOG_PREFIX} ⚠️ 无法获取 LLM provider ID，回退到关键词分析")
                 return self._analyze_by_keywords(messages)
+
+            logger.info(f"{LOG_PREFIX} 🤖 调用 LLM 分析 | Provider: {provider_id}")
 
             # 调用 LLM
             llm_resp = await self._astrbot_context.llm_generate(
@@ -178,21 +204,30 @@ class ContextAnalyzer:
             )
 
             # 解析 LLM 响应
-            result = llm_resp.completion_text.strip().lower()
+            raw_result = llm_resp.completion_text.strip()
+            result = raw_result.lower()
 
             # 清理结果，只保留类别名称
             result = re.sub(r"[^\w]", "", result)
 
+            logger.debug(f"{LOG_PREFIX} 🤖 LLM 原始响应: {raw_result}")
+            logger.debug(f"{LOG_PREFIX} 🤖 LLM 处理后响应: {result}")
+
             if result == "random" or result not in available_emotions:
                 # LLM 无法确定或返回了无效的类别，随机选择
-                logger.debug(f"{LOG_PREFIX} LLM 返回无效类别 '{result}'，随机选择")
-                return random.choice(available_emotions)
+                selected = random.choice(available_emotions)
+                logger.warning(
+                    f"{LOG_PREFIX} ⚠️ LLM 返回无效类别 '{raw_result}' -> '{result}'，"
+                    f"随机选择: {selected}"
+                )
+                return selected
 
-            logger.info(f"{LOG_PREFIX} LLM 分析结果: {result}")
+            logger.info(f"{LOG_PREFIX} ✅ LLM 分析成功: {result}")
             return result
 
         except Exception as e:
-            logger.error(f"{LOG_PREFIX} LLM 分析失败: {e}")
+            logger.error(f"{LOG_PREFIX} ❌ LLM 分析失败: {e}")
+            logger.info(f"{LOG_PREFIX} 🔄 回退到关键词分析")
             # LLM 分析失败，回退到关键词分析
             return self._analyze_by_keywords(messages)
 
