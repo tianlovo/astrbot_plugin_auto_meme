@@ -20,7 +20,7 @@ from .init import init_plugin
 from .services.group_context_service import GroupContextService
 from .services.llm_service import LLMService
 from .services.meme_service import MemeService
-from .utils import load_json
+from .utils.common import load_json
 
 
 @register("meme_auto", "anka", "anka - 自动表情包 - 基于群聊语境主动发送", "4.0")
