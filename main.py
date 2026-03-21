@@ -68,10 +68,7 @@ class MemeAutoPlugin(Star):
         llm_config = self.config_manager.get_llm_config()
 
         # 初始化服务层
-        self.group_context_service = GroupContextService(
-            window_size=basic_config.window_size,
-            enabled_groups=basic_config.enabled_groups,
-        )
+        self.group_context_service = GroupContextService(config=basic_config)
         self.meme_service = MemeService(
             convert_static_to_gif=basic_config.convert_static_to_gif
         )
