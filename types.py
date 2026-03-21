@@ -17,6 +17,7 @@ class BasicConfig:
         trigger_probability: 触发概率
         convert_static_to_gif: 是否将静态图转为GIF
         webui_port: WebUI 端口号
+        webui_key: WebUI 登录密钥
     """
 
     enabled_groups: list[str]
@@ -25,6 +26,7 @@ class BasicConfig:
     trigger_probability: int
     convert_static_to_gif: bool
     webui_port: int
+    webui_key: str
 
     @classmethod
     def from_dict(cls, config: dict) -> "BasicConfig":
@@ -43,6 +45,7 @@ class BasicConfig:
             trigger_probability=config.get("trigger_probability", 50),
             convert_static_to_gif=config.get("convert_static_to_gif", False),
             webui_port=config.get("webui_port", 5000),
+            webui_key=config.get("webui_key", "meme_auto"),
         )
 
 

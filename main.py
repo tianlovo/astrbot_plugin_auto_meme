@@ -107,7 +107,7 @@ class MemeAutoPlugin(Star):
 
         # 初始化 WebUI
         self.webui_task = None
-        self._init_webui(basic_config.webui_port)
+        self._init_webui(basic_config.webui_port, basic_config.webui_key)
 
         logger.info(
             f"{LOG_PREFIX} 插件已初始化，"
@@ -119,17 +119,18 @@ class MemeAutoPlugin(Star):
             f"{LOG_PREFIX} 消息监听已启动 - 使用 EventMessageType.ALL 过滤器"
         )
 
-    def _init_webui(self, port: int):
+    def _init_webui(self, port: int, key: str):
         """初始化 WebUI 服务。
 
         Args:
             port: WebUI 端口号
+            key: WebUI 登录密钥
         """
         try:
             # 准备 WebUI 配置
             webui_config = {
                 "webui_port": port,
-                "server_key": "meme_auto",  # 默认登录密钥
+                "server_key": key,
                 "category_manager": self.category_manager,
             }
 

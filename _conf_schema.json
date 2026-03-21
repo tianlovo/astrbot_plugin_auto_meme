@@ -61,6 +61,12 @@
           "max": 65535,
           "step": 1
         }
+      },
+      "webui_key": {
+        "description": "WebUI 登录密钥",
+        "type": "string",
+        "default": "meme_auto",
+        "hint": "管理后台的登录密钥，建议修改默认值以增强安全性"
       }
     }
   },
