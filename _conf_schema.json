@@ -50,6 +50,17 @@
         "type": "bool",
         "default": false,
         "hint": "开启后，发送静态图片表情时会将其转换为1帧的GIF格式"
+      },
+      "webui_port": {
+        "description": "WebUI 端口",
+        "type": "int",
+        "default": 5000,
+        "hint": "表情包管理后台的端口号，修改后需要重启插件生效",
+        "slider": {
+          "min": 1000,
+          "max": 65535,
+          "step": 1
+        }
       }
     }
   },

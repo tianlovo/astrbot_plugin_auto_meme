@@ -3,6 +3,8 @@
 基于群聊语境主动发送表情包的 AstrBot 插件。
 """
 
+import asyncio
+
 from astrbot.api import logger
 from astrbot.api.all import *
 from astrbot.api.event import AstrMessageEvent, filter
@@ -12,7 +14,7 @@ from astrbot.api.star import Context, Star, register
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 from .backend.category_manager import CategoryManager
-from .config import DEFAULT_CATEGORY_DESCRIPTIONS, MEMES_DATA_PATH
+from .config import DEFAULT_CATEGORY_DESCRIPTIONS, MEMES_DIR, MEMES_DATA_PATH
 from .constants import LOG_PREFIX
 from .core.config_manager import ConfigManager
 from .core.context_analyzer import ContextAnalyzer
@@ -23,6 +25,7 @@ from .services.group_context_service import GroupContextService
 from .services.llm_service import LLMService
 from .services.meme_service import MemeService
 from .utils.common import load_json
+from .webui import start_server
 
 
 @register("meme_auto", "anka", "anka - 自动表情包 - 基于群聊语境主动发送", "4.1.1")
@@ -41,6 +44,7 @@ class MemeAutoPlugin(Star):
         context_analyzer: 语境分析器
         group_message_handler: 群消息处理器
         command_handler: 命令处理器
+        webui_task: WebUI 后台任务
     """
 
     def __init__(self, context: Context, config: dict = None):
@@ -101,6 +105,10 @@ class MemeAutoPlugin(Star):
             meme_service=self.meme_service,
         )
 
+        # 初始化 WebUI
+        self.webui_task = None
+        self._init_webui(basic_config.webui_port)
+
         logger.info(
             f"{LOG_PREFIX} 插件已初始化，"
             f"窗口大小: {basic_config.window_size}, "
@@ -110,6 +118,26 @@ class MemeAutoPlugin(Star):
         logger.info(
             f"{LOG_PREFIX} 消息监听已启动 - 使用 EventMessageType.ALL 过滤器"
         )
+
+    def _init_webui(self, port: int):
+        """初始化 WebUI 服务。
+
+        Args:
+            port: WebUI 端口号
+        """
+        try:
+            # 准备 WebUI 配置
+            webui_config = {
+                "webui_port": port,
+                "server_key": "meme_auto",  # 默认登录密钥
+                "category_manager": self.category_manager,
+            }
+
+            # 启动 WebUI 服务
+            self.webui_task = asyncio.create_task(start_server(webui_config))
+            logger.info(f"{LOG_PREFIX} WebUI 服务已启动，访问地址: http://localhost:{port}")
+        except Exception as e:
+            logger.error(f"{LOG_PREFIX} WebUI 服务启动失败: {e}")
 
     @filter.event_message_type(EventMessageType.ALL)
     async def on_all_message(self, event: AstrMessageEvent):
@@ -170,4 +198,13 @@ class MemeAutoPlugin(Star):
 
     async def terminate(self):
         """清理资源。"""
+        # 关闭 WebUI 服务
+        if self.webui_task:
+            self.webui_task.cancel()
+            try:
+                await self.webui_task
+            except asyncio.CancelledError:
+                pass
+            logger.info(f"{LOG_PREFIX} WebUI 服务已关闭")
+
         logger.info(f"{LOG_PREFIX} 插件已关闭")
