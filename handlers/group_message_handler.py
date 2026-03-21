@@ -88,19 +88,20 @@ class GroupMessageHandler(BaseHandler):
 
         self.log_info(f"✅ 群 {group_id} 在白名单中，开始处理")
 
-        # 格式化消息（包含用户名称）
-        message_content = MessageUtils.format_message(event)
-        if not message_content:
+        # 格式化消息
+        message_text = MessageUtils.format_message(event)
+        if not message_text:
             self.log_debug("⏭️ 跳过: 消息内容为空")
             return False
 
-        # 格式：用户名称：消息内容
-        message_text = f"{sender_name}：{message_content}"
-
         self.log_info(f"📝 消息内容: {message_text[:50]}{'...' if len(message_text) > 50 else ''}")
 
+        # 构建带用户名的消息格式
+        sender_name = event.get_sender_name()
+        formatted_message = f"{sender_name}：{message_text}"
+
         # 添加到滑动窗口
-        count = self.context_service.add_message(group_id, message_text)
+        count = self.context_service.add_message(group_id, formatted_message)
         self.log_info(
             f"📊 群 {group_id} 滑动窗口 | 当前计数: {count}/{self.config.trigger_interval} | "
             f"窗口大小: {self.config.window_size}"
