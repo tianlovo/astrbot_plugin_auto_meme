@@ -80,8 +80,11 @@ class MemeAutoPlugin(Star):
 
         # 初始化语境分析器
         self.context_analyzer = ContextAnalyzer(
+            astrbot_context=context,
             category_mapping=category_mapping,
-            llm_service=self.llm_service,
+            use_llm_analysis=llm_config.use_llm_analysis,
+            system_prompt=llm_config.system_prompt,
+            user_prompt=llm_config.user_prompt,
         )
 
         # 初始化处理器
