@@ -16,8 +16,6 @@ class BasicConfig:
         trigger_interval: 触发间隔（消息数）
         trigger_probability: 触发概率
         convert_static_to_gif: 是否将静态图转为GIF
-        webui_port: WebUI 端口号
-        webui_key: WebUI 登录密钥
     """
 
     enabled_groups: list[str]
@@ -25,8 +23,6 @@ class BasicConfig:
     trigger_interval: int
     trigger_probability: int
     convert_static_to_gif: bool
-    webui_port: int
-    webui_key: str
 
     @classmethod
     def from_dict(cls, config: dict) -> "BasicConfig":
@@ -44,6 +40,32 @@ class BasicConfig:
             trigger_interval=config.get("trigger_interval", 5),
             trigger_probability=config.get("trigger_probability", 50),
             convert_static_to_gif=config.get("convert_static_to_gif", False),
+        )
+
+
+@dataclass
+class WebUIConfig:
+    """WebUI配置数据类。
+
+    Attributes:
+        webui_port: WebUI 端口号
+        webui_key: WebUI 登录密钥
+    """
+
+    webui_port: int
+    webui_key: str
+
+    @classmethod
+    def from_dict(cls, config: dict) -> "WebUIConfig":
+        """从字典创建配置对象。
+
+        Args:
+            config: 配置字典
+
+        Returns:
+            WebUIConfig实例
+        """
+        return cls(
             webui_port=config.get("webui_port", 5000),
             webui_key=config.get("webui_key", "meme_auto"),
         )

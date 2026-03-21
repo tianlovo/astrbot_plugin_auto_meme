@@ -9,19 +9,20 @@ from typing import Any
 from astrbot.api import logger
 
 from ..constants import LOG_PREFIX
-from ..types import BasicConfig, LLMConfig
+from ..types import BasicConfig, LLMConfig, WebUIConfig
 
 
 class ConfigManager:
     """配置管理器类。
 
-    负责管理插件的配置，支持从父级结构（basic 和 llm_analysis）读取配置，
+    负责管理插件的配置，支持从父级结构（basic、llm_analysis、webui）读取配置，
     并提供配置热重载功能。
 
     Attributes:
         _raw_config: 原始配置字典
         _basic_config: 基础配置对象
         _llm_config: LLM配置对象
+        _webui_config: WebUI配置对象
     """
 
     def __init__(self, config: dict[str, Any] | None = None):
@@ -33,12 +34,13 @@ class ConfigManager:
         self._raw_config = config or {}
         self._basic_config: BasicConfig | None = None
         self._llm_config: LLMConfig | None = None
+        self._webui_config: WebUIConfig | None = None
 
         self._parse_config()
         logger.info(f"{LOG_PREFIX} 配置管理器已初始化")
 
     def _parse_config(self) -> None:
-        """解析原始配置，提取基础配置和LLM配置。"""
+        """解析原始配置，提取基础配置、LLM配置和WebUI配置。"""
         try:
             # 解析基础配置（basic 父级结构）
             basic_dict = self._raw_config.get("basic", {})
@@ -48,11 +50,16 @@ class ConfigManager:
             llm_dict = self._raw_config.get("llm_analysis", {})
             self._llm_config = LLMConfig.from_dict(llm_dict)
 
+            # 解析WebUI配置（webui 父级结构）
+            webui_dict = self._raw_config.get("webui", {})
+            self._webui_config = WebUIConfig.from_dict(webui_dict)
+
         except Exception as e:
             logger.error(f"{LOG_PREFIX} 配置解析失败: {e}")
             # 使用默认配置作为回退
             self._basic_config = BasicConfig.from_dict({})
             self._llm_config = LLMConfig.from_dict({})
+            self._webui_config = WebUIConfig.from_dict({})
 
     def reload_config(self, new_config: dict[str, Any] | None = None) -> None:
         """热重载配置。
@@ -68,6 +75,7 @@ class ConfigManager:
 
         old_basic = self._basic_config
         old_llm = self._llm_config
+        old_webui = self._webui_config
 
         try:
             self._parse_config()
@@ -78,12 +86,15 @@ class ConfigManager:
                 logger.debug(f"{LOG_PREFIX} 基础配置已更新")
             if old_llm and old_llm != self._llm_config:
                 logger.debug(f"{LOG_PREFIX} LLM配置已更新")
+            if old_webui and old_webui != self._webui_config:
+                logger.debug(f"{LOG_PREFIX} WebUI配置已更新")
 
         except Exception as e:
             logger.error(f"{LOG_PREFIX} 配置热重载失败: {e}")
             # 保持原有配置不变
             self._basic_config = old_basic
             self._llm_config = old_llm
+            self._webui_config = old_webui
 
     def get_basic_config(self) -> BasicConfig:
         """获取基础配置。
@@ -110,6 +121,19 @@ class ConfigManager:
         if self._llm_config is None:
             raise RuntimeError(f"{LOG_PREFIX} LLM配置未初始化")
         return self._llm_config
+
+    def get_webui_config(self) -> WebUIConfig:
+        """获取WebUI配置。
+
+        Returns:
+            WebUIConfig: WebUI配置对象
+
+        Raises:
+            RuntimeError: 如果配置未初始化
+        """
+        if self._webui_config is None:
+            raise RuntimeError(f"{LOG_PREFIX} WebUI配置未初始化")
+        return self._webui_config
 
     def get_raw_config(self) -> dict[str, Any]:
         """获取原始配置字典。

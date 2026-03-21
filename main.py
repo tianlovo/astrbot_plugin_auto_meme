@@ -105,9 +105,10 @@ class MemeAutoPlugin(Star):
             meme_service=self.meme_service,
         )
 
-        # 初始化 WebUI
+        # 获取 WebUI 配置并初始化
+        webui_config = self.config_manager.get_webui_config()
         self.webui_task = None
-        self._init_webui(basic_config.webui_port, basic_config.webui_key)
+        self._init_webui(webui_config.webui_port, webui_config.webui_key)
 
         logger.info(
             f"{LOG_PREFIX} 插件已初始化，"

@@ -50,23 +50,6 @@
         "type": "bool",
         "default": false,
         "hint": "开启后，发送静态图片表情时会将其转换为1帧的GIF格式"
-      },
-      "webui_port": {
-        "description": "WebUI 端口",
-        "type": "int",
-        "default": 5000,
-        "hint": "表情包管理后台的端口号，修改后需要重启插件生效",
-        "slider": {
-          "min": 1000,
-          "max": 65535,
-          "step": 1
-        }
-      },
-      "webui_key": {
-        "description": "WebUI 登录密钥",
-        "type": "string",
-        "default": "meme_auto",
-        "hint": "管理后台的登录密钥，建议修改默认值以增强安全性"
       }
     }
   },
@@ -91,6 +74,29 @@
         "type": "string",
         "default": "请分析以下群聊消息，选择最合适的表情包类别：\\n\\n{context_text}\\n\\n最合适的类别是：",
         "hint": "自定义LLM分析语境时的用户提示词。留空则使用默认提示词。可用变量：{context_text} 表示群聊消息内容"
+      }
+    }
+  },
+  "webui": {
+    "description": "WebUI管理后台配置",
+    "type": "object",
+    "items": {
+      "webui_port": {
+        "description": "WebUI 端口",
+        "type": "int",
+        "default": 5000,
+        "hint": "表情包管理后台的端口号，修改后需要重启插件生效",
+        "slider": {
+          "min": 1000,
+          "max": 65535,
+          "step": 1
+        }
+      },
+      "webui_key": {
+        "description": "WebUI 登录密钥",
+        "type": "string",
+        "default": "meme_auto",
+        "hint": "管理后台的登录密钥，建议修改默认值以增强安全性"
       }
     }
   }
