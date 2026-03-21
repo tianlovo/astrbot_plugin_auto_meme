@@ -205,12 +205,15 @@ class ContextAnalyzer:
 
             # 解析 LLM 响应
             raw_result = llm_resp.completion_text.strip()
-            result = raw_result.lower()
+            logger.debug(f"{LOG_PREFIX} 🤖 LLM 原始响应: {raw_result}")
 
-            # 清理结果，只保留类别名称
+            # 清理 <think> 标签及其内容（某些模型会输出思考过程）
+            result = re.sub(r"<think>.*?</think>", "", raw_result, flags=re.DOTALL)
+
+            # 转换为小写并清理非字母数字字符
+            result = result.lower()
             result = re.sub(r"[^\w]", "", result)
 
-            logger.debug(f"{LOG_PREFIX} 🤖 LLM 原始响应: {raw_result}")
             logger.debug(f"{LOG_PREFIX} 🤖 LLM 处理后响应: {result}")
 
             if result == "random" or result not in available_emotions:
