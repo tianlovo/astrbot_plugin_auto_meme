@@ -102,7 +102,7 @@ class SyncManager:
         print(f"\n本地不存在的文件: {len(to_download)} 个")
 
         # 远程删除：检查哪些文件在云端存在但本地不存在
-        to_delete_remote = to_download.copy() 
+        to_delete_remote = to_download.copy()
         print(f"\n云端多出的文件: {len(to_delete_remote)} 个")
 
         # 本地删除：检查哪些文件在本地存在但云端不存在
@@ -124,7 +124,9 @@ class SyncManager:
             "to_download": to_download,
             "to_delete_local": to_delete_local,
             "to_delete_remote": to_delete_remote,
-            "is_synced": not (to_upload or to_download or to_delete_local or to_delete_remote),
+            "is_synced": not (
+                to_upload or to_download or to_delete_local or to_delete_remote
+            ),
         }
 
     def sync_to_remote(self) -> bool:
@@ -268,7 +270,9 @@ class SyncManager:
                         deleted_count += 1
                         # 同时从上传记录中移除
                         if self.upload_tracker:
-                            self.upload_tracker.remove_record(file_path, img.get("category", ""))
+                            self.upload_tracker.remove_record(
+                                file_path, img.get("category", "")
+                            )
                 except Exception as e:
                     print(f"\n删除本地文件失败: {img['filename']} - {str(e)}")
             print(f"\n本地清理完成: 成功删除 {deleted_count} 个")
