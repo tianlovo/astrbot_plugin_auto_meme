@@ -7,6 +7,7 @@ import os
 import random
 import tempfile
 import time
+from datetime import datetime
 from pathlib import Path
 
 from PIL import Image as PILImage
@@ -21,6 +22,13 @@ from ..constants import LOG_PREFIX, SUPPORTED_IMAGE_FORMATS
 from ..types import MemeInfo
 
 
+# 时间限制配置
+TIME_RESTRICTED_CATEGORIES = {
+    "morning": {"start": 6, "end": 11},  # 早上 6:00 - 11:59
+    "sleep": {"start": 21, "end": 2},    # 晚上 21:00 - 次日 2:59
+}
+
+
 class MemeService:
     """表情包服务类。
 
@@ -29,17 +37,20 @@ class MemeService:
     Attributes:
         memes_dir: 表情包目录路径
         convert_static_to_gif: 是否将静态图转换为GIF
+        timezone: 时区设置
     """
 
-    def __init__(self, memes_dir: Path = None, convert_static_to_gif: bool = False):
+    def __init__(self, memes_dir: Path = None, convert_static_to_gif: bool = False, timezone: str = "Asia/Shanghai"):
         """初始化表情包服务。
 
         Args:
             memes_dir: 表情包目录路径，默认使用 config.MEMES_DIR
             convert_static_to_gif: 是否将静态图转换为GIF格式
+            timezone: 时区设置，默认 Asia/Shanghai
         """
         self.memes_dir = memes_dir or MEMES_DIR
         self.convert_static_to_gif = convert_static_to_gif
+        self.timezone = timezone
 
     def get_random_meme(self, emotion: str) -> MemeInfo | None:
         """获取指定类别的随机表情包。
@@ -115,6 +126,49 @@ class MemeService:
             logger.error(f"{LOG_PREFIX} 转换图片为 GIF 失败: {e}")
             return image_path
 
+    def _check_time_restriction(self, emotion: str) -> bool:
+        """检查表情包类别是否在允许的时间范围内。
+
+        Args:
+            emotion: 表情包类别名称
+
+        Returns:
+            如果在允许的时间范围内返回 True，否则返回 False
+        """
+        if emotion not in TIME_RESTRICTED_CATEGORIES:
+            return True
+
+        try:
+            from zoneinfo import ZoneInfo
+
+            # 获取当前时间（指定时区）
+            now = datetime.now(ZoneInfo(self.timezone))
+            current_hour = now.hour
+
+            restriction = TIME_RESTRICTED_CATEGORIES[emotion]
+            start_hour = restriction["start"]
+            end_hour = restriction["end"]
+
+            # 处理跨天的情况（如 sleep: 21:00 - 02:59）
+            if start_hour > end_hour:
+                # 跨天时间段（如 21:00 - 02:59）
+                allowed = current_hour >= start_hour or current_hour <= end_hour
+            else:
+                # 当天时间段（如 06:00 - 11:59）
+                allowed = start_hour <= current_hour <= end_hour
+
+            if not allowed:
+                logger.info(
+                    f"{LOG_PREFIX} ⏰ 类别 '{emotion}' 不在允许的时间范围内 | "
+                    f"当前时间: {now.strftime('%Y-%m-%d %H:%M')} | "
+                    f"允许时段: {start_hour}:00-{end_hour}:59"
+                )
+
+            return allowed
+        except Exception as e:
+            logger.error(f"{LOG_PREFIX} 检查时间限制失败: {e}")
+            return True  # 出错时允许发送
+
     async def send_meme(self, event: AstrMessageEvent, emotion: str) -> bool:
         """发送指定类别的表情包。
 
@@ -126,6 +180,11 @@ class MemeService:
             发送是否成功
         """
         logger.info(f"{LOG_PREFIX} 🖼️ 开始获取表情包 | 类别: {emotion}")
+
+        # 检查时间限制
+        if not self._check_time_restriction(emotion):
+            logger.info(f"{LOG_PREFIX} ⏰ 跳过发送 | 类别 '{emotion}' 当前不在允许的时间范围内")
+            return False
 
         meme_info = self.get_random_meme(emotion)
         if not meme_info:

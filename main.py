@@ -76,7 +76,8 @@ class MemeAutoPlugin(Star):
         # 初始化服务层
         self.group_context_service = GroupContextService(config=basic_config)
         self.meme_service = MemeService(
-            convert_static_to_gif=basic_config.convert_static_to_gif
+            convert_static_to_gif=basic_config.convert_static_to_gif,
+            timezone=basic_config.timezone
         )
         self.llm_service = LLMService(
             config=llm_config,
@@ -91,6 +92,7 @@ class MemeAutoPlugin(Star):
             use_llm_analysis=llm_config.use_llm_analysis,
             system_prompt=llm_config.system_prompt,
             user_prompt=llm_config.user_prompt,
+            timezone=basic_config.timezone
         )
 
         # 初始化处理器

@@ -5,6 +5,7 @@
 
 import random
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from astrbot.api import logger
@@ -33,6 +34,7 @@ class ContextAnalyzer:
         _use_llm_analysis: 是否使用 LLM 分析
         _system_prompt: 自定义系统提示词
         _user_prompt: 自定义用户提示词
+        _timezone: 时区设置
     """
 
     def __init__(
@@ -42,6 +44,7 @@ class ContextAnalyzer:
         use_llm_analysis: bool = True,
         system_prompt: str = "",
         user_prompt: str = "",
+        timezone: str = "Asia/Shanghai",
     ):
         """初始化语境分析器。
 
@@ -51,12 +54,14 @@ class ContextAnalyzer:
             use_llm_analysis: 是否使用 LLM 分析，默认为 True
             system_prompt: 自定义系统提示词，为空则使用默认提示词
             user_prompt: 自定义用户提示词，为空则使用默认提示词
+            timezone: 时区设置，默认为 Asia/Shanghai
         """
         self._astrbot_context = astrbot_context
         self._category_mapping = category_mapping
         self._use_llm_analysis = use_llm_analysis
         self._system_prompt = system_prompt
         self._user_prompt = user_prompt
+        self._timezone = timezone
 
         logger.info(
             f"{LOG_PREFIX} 语境分析器已初始化，使用策略: {'LLM' if use_llm_analysis else '关键词'}"
@@ -169,12 +174,25 @@ class ContextAnalyzer:
 
         logger.debug(f"{LOG_PREFIX} 🤖 可用类别:\n{emotions_list}")
 
+        # 获取当前时间（指定时区）
+        try:
+            from zoneinfo import ZoneInfo
+            current_time = datetime.now(ZoneInfo(self._timezone)).strftime("%Y-%m-%d %H:%M")
+        except Exception:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+
         # 构建系统提示词
         if self._system_prompt:
-            system_prompt = self._system_prompt.format(emotions_list=emotions_list)
+            system_prompt = self._system_prompt.format(
+                emotions_list=emotions_list,
+                current_time=current_time
+            )
             logger.debug(f"{LOG_PREFIX} 📝 使用自定义系统提示词")
         else:
-            system_prompt = DEFAULT_SYSTEM_PROMPT.format(emotions_list=emotions_list)
+            system_prompt = DEFAULT_SYSTEM_PROMPT.format(
+                emotions_list=emotions_list,
+                current_time=current_time
+            )
             logger.debug(f"{LOG_PREFIX} 📝 使用默认系统提示词")
 
         # 构建用户提示词

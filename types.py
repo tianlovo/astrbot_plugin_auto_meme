@@ -16,6 +16,7 @@ class BasicConfig:
         trigger_interval: 触发间隔（消息数）
         trigger_probability: 触发概率
         convert_static_to_gif: 是否将静态图转为GIF
+        timezone: 时区设置
     """
 
     enabled_groups: list[str]
@@ -23,6 +24,7 @@ class BasicConfig:
     trigger_interval: int
     trigger_probability: int
     convert_static_to_gif: bool
+    timezone: str
 
     @classmethod
     def from_dict(cls, config: dict) -> "BasicConfig":
@@ -40,6 +42,7 @@ class BasicConfig:
             trigger_interval=config.get("trigger_interval", 5),
             trigger_probability=config.get("trigger_probability", 50),
             convert_static_to_gif=config.get("convert_static_to_gif", False),
+            timezone=config.get("timezone", "Asia/Shanghai"),
         )
 
 
