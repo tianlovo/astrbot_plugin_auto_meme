@@ -13,7 +13,7 @@ from ..backend.category_manager import CategoryManager
 from ..config import MEMES_DIR
 from ..constants import LOG_PREFIX, SUPPORTED_PLATFORM
 from ..services.meme_service import MemeService
-from ..types import UploadState
+from ..models import UploadState
 from ..utils.image_utils import ImageUtils
 from ..utils.message_utils import MessageUtils
 

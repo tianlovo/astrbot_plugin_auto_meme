@@ -7,7 +7,7 @@ from astrbot.api import logger
 
 from ..constants import LOG_PREFIX
 from ..group_context_manager import GroupContextManager
-from ..types import BasicConfig
+from ..models import BasicConfig
 
 
 class GroupContextService:

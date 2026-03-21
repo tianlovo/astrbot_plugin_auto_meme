@@ -5,7 +5,7 @@ import pytest
 from ..constants import EMOTION_KEYWORDS
 from ..core.context_analyzer import ContextAnalyzer
 from ..services.llm_service import LLMService
-from ..types import LLMConfig
+from ..models import LLMConfig
 
 
 class TestContextAnalyzer:

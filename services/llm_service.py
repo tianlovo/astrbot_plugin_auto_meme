@@ -16,7 +16,7 @@ from ..constants import (
     EMOTION_KEYWORDS,
     LOG_PREFIX,
 )
-from ..types import LLMConfig
+from ..models import LLMConfig
 
 
 class LLMService:

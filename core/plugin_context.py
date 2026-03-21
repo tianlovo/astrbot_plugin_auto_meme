@@ -9,7 +9,7 @@ from typing import Any
 from astrbot.api import logger
 
 from ..constants import LOG_PREFIX
-from ..types import UploadState
+from ..models import UploadState
 
 
 class PluginContext:

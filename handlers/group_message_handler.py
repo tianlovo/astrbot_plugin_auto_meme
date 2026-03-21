@@ -11,7 +11,7 @@ from ..constants import SUPPORTED_PLATFORM
 from ..core.context_analyzer import ContextAnalyzer
 from ..services.group_context_service import GroupContextService
 from ..services.meme_service import MemeService
-from ..types import BasicConfig
+from ..models import BasicConfig
 from ..utils.message_utils import MessageUtils
 from .base_handler import BaseHandler
 

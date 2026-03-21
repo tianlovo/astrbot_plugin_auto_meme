@@ -9,7 +9,7 @@ from typing import Any
 from astrbot.api import logger
 
 from ..constants import LOG_PREFIX
-from ..types import BasicConfig, LLMConfig, WebUIConfig
+from ..models import BasicConfig, LLMConfig, WebUIConfig
 
 
 class ConfigManager:

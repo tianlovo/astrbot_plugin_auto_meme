@@ -19,7 +19,7 @@ from astrbot.core.message.message_event_result import MessageChain
 
 from ..config import MEMES_DIR
 from ..constants import LOG_PREFIX, SUPPORTED_IMAGE_FORMATS
-from ..types import MemeInfo
+from ..models import MemeInfo
 
 
 # 时间限制配置
