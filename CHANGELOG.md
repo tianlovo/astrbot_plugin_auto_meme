@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [4.1.4] - 2026-03-21
+
+### 🗑️ 移除
+
+- **表情管理指令**: 移除 `/表情管理` 命令组及相关指令
+  - 表情包管理功能已迁移至 WebUI 管理后台
+  - 请使用 WebUI 进行表情包查看、添加和统计
+
 ## [4.1.3] - 2026-03-21
 
 ### 🐛 修复

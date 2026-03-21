@@ -28,7 +28,7 @@ from .utils.common import load_json
 from .webui import start_server
 
 
-@register("meme_auto", "anka", "anka - 自动表情包 - 基于群聊语境主动发送", "4.1.3")
+@register("meme_auto", "anka", "anka - 自动表情包 - 基于群聊语境主动发送", "4.1.4")
 class MemeAutoPlugin(Star):
     """自动表情包插件主类。
 
@@ -156,47 +156,6 @@ class MemeAutoPlugin(Star):
 
         # 处理群消息
         await self.group_message_handler.handle(event)
-
-    @filter.command_group("表情管理")
-    def meme_auto(self):
-        """表情包管理命令组。
-
-        可用命令:
-        - 查看图库: 查看所有可用表情包类别
-        - 添加表情: 上传表情包到指定类别
-        - 图库统计: 显示图库详细统计信息
-        """
-        pass
-
-    @meme_auto.command("查看图库")
-    async def list_emotions(self, event: AstrMessageEvent):
-        """查看所有可用表情包类别。"""
-        async for result in self.command_handler.list_emotions(event):
-            yield result
-
-    @filter.permission_type(filter.PermissionType.ADMIN)
-    @meme_auto.command("添加表情")
-    async def upload_meme(self, event: AstrMessageEvent, category: str = None):
-        """上传表情包到指定类别。
-
-        Args:
-            event: AstrBot 消息事件
-            category: 目标类别名称
-        """
-        async for result in self.command_handler.upload_meme(event, category):
-            yield result
-
-    @filter.event_message_type(EventMessageType.ALL)
-    async def handle_upload_image(self, event: AstrMessageEvent):
-        """处理用户上传的图片。"""
-        async for result in self.command_handler.handle_upload_image(event):
-            yield result
-
-    @meme_auto.command("图库统计")
-    async def show_library_stats(self, event: AstrMessageEvent):
-        """显示图库详细统计信息。"""
-        async for result in self.command_handler.show_stats(event):
-            yield result
 
     async def terminate(self):
         """清理资源。"""
