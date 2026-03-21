@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [4.1.1] - 2026-03-21
+
+### 🐛 修复
+
+- **消息接收**: 使用 `EventMessageType.ALL` 替代 `GROUP_MESSAGE` 以正确接收消息
+- **LLM 响应解析**: 清理 `<think>` 标签及其内容，处理只有 `</think>` 结束标签的情况
+- **连续发送问题**: 添加处理状态锁，防止 LLM 分析期间重复触发发送表情包
+- **计数器重置**: 退出处理状态后重置计数器，防止处理期间累积的消息导致立即再次触发
+
 ## [4.1.0] - 2026-03-21
 
 ### 🚀 重构
