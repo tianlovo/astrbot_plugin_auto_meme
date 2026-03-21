@@ -3,7 +3,7 @@ import os
 import shutil
 
 from ..config import DEFAULT_CATEGORY_DESCRIPTIONS, MEMES_DATA_PATH, MEMES_DIR
-from ..utils import ensure_dir_exists, load_json, save_json
+from ..utils.common import ensure_dir_exists, load_json, save_json
 
 logger = logging.getLogger(__name__)
 

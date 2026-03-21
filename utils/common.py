@@ -6,7 +6,10 @@
 import json
 import logging
 import os
+import shutil
 from typing import Any
+
+from ..config import CURRENT_DIR, MEMES_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -57,3 +60,31 @@ def load_json(filepath: str, default: dict = None) -> dict:
     except Exception as e:
         logger.error(f"加载 JSON 文件失败 {filepath}: {e}")
         return default if default is not None else {}
+
+
+def copy_memes_if_not_exists():
+    """如果 MEMES_DIR 下没有表情包文件，则复制 CURRENT_DIR 下的 memes 文件夹内容。"""
+    # 确保目录存在
+    ensure_dir_exists(MEMES_DIR)
+
+    # 检查目录是否为空或只有非常少的文件（可能是残留或系统生成文件）
+    meme_files = [
+        f for f in os.listdir(MEMES_DIR) if os.path.isfile(os.path.join(MEMES_DIR, f))
+    ]
+
+    # 如果目录为空或几乎为空，复制默认表情包
+    if len(meme_files) < 3:  # 假设少于3个文件认为是空目录
+        source_dir = os.path.join(CURRENT_DIR, "memes")
+        if os.path.exists(source_dir):
+            # 复制所有文件
+            for item in os.listdir(source_dir):
+                src_path = os.path.join(source_dir, item)
+                dst_path = os.path.join(MEMES_DIR, item)
+                if os.path.isdir(src_path):
+                    if not os.path.exists(dst_path):
+                        shutil.copytree(src_path, dst_path)
+                else:
+                    shutil.copy2(src_path, dst_path)
+            logger.info(f"已将默认表情包复制到 {MEMES_DIR}")
+        else:
+            logger.warning(f"默认表情包目录不存在: {source_dir}")

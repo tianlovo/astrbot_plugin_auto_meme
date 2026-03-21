@@ -6,7 +6,11 @@ from .config import (
     DEFAULT_CATEGORY_DESCRIPTIONS,
     MEMES_DATA_PATH,
 )
-from .utils import copy_memes_if_not_exists, ensure_dir_exists, save_json
+from .utils.common import (
+    copy_memes_if_not_exists,
+    ensure_dir_exists,
+    save_json,
+)
 
 logger = logging.getLogger(__name__)
 
