@@ -161,11 +161,12 @@ class ContextAnalyzer:
         # 合并所有消息文本
         context_text = "\n".join(messages)
 
-        # 构建可用的表情包类别列表
-        available_emotions = list(self._category_mapping.keys())
-        emotions_list = ", ".join(available_emotions)
+        # 构建可用的表情包类别列表（包含描述）
+        emotions_list = "\n".join(
+            [f"- {emotion}: {desc}" for emotion, desc in self._category_mapping.items()]
+        )
 
-        logger.debug(f"{LOG_PREFIX} 🤖 可用类别: {emotions_list}")
+        logger.debug(f"{LOG_PREFIX} 🤖 可用类别:\n{emotions_list}")
 
         # 构建系统提示词
         if self._system_prompt:
@@ -209,14 +210,23 @@ class ContextAnalyzer:
 
             # 清理 <think> 标签及其内容（某些模型会输出思考过程）
             # 处理两种情况：1. 完整的 <think>...</think>  2. 只有 </think> 结束标签
-            result = re.sub(r"<think>.*?</think>", "", raw_result, flags=re.DOTALL)
-            result = re.sub(r"</think>", "", result)
+            cleaned_result = re.sub(r"<think>.*?</think>", "", raw_result, flags=re.DOTALL)
+            cleaned_result = re.sub(r"</think>", "", cleaned_result)
 
-            # 转换为小写并清理非字母数字字符
-            result = result.lower()
-            result = re.sub(r"[^\w]", "", result)
+            # 尝试解析新的响应格式：类别: xxx\n原因: yyy
+            emotion_match = re.search(r"类别[:：]\s*(\w+)", cleaned_result, re.IGNORECASE)
+            reason_match = re.search(r"原因[:：]\s*(.+?)(?:\n|$)", cleaned_result, re.IGNORECASE | re.DOTALL)
 
-            logger.debug(f"{LOG_PREFIX} 🤖 LLM 处理后响应: {result}")
+            if emotion_match:
+                result = emotion_match.group(1).lower().strip()
+                reason = reason_match.group(1).strip() if reason_match else "未提供"
+            else:
+                # 回退到旧格式：只返回类别名称
+                result = cleaned_result.lower()
+                result = re.sub(r"[^\w]", "", result)
+                reason = "未提供"
+
+            logger.debug(f"{LOG_PREFIX} 🤖 LLM 解析结果: 类别={result}, 原因={reason}")
 
             if result == "random" or result not in available_emotions:
                 # LLM 无法确定或返回了无效的类别，随机选择
@@ -227,7 +237,7 @@ class ContextAnalyzer:
                 )
                 return selected
 
-            logger.info(f"{LOG_PREFIX} ✅ LLM 分析成功: {result}")
+            logger.info(f"{LOG_PREFIX} ✅ LLM 分析成功: {result} | 原因: {reason}")
             return result
 
         except Exception as e:
