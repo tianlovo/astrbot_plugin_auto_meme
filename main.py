@@ -102,6 +102,8 @@ class MemeSender(Star):
         self.trigger_probability = self.config.get("trigger_probability", 50)
         self.convert_static_to_gif = self.config.get("convert_static_to_gif", False)
         self.use_llm_analysis = self.config.get("use_llm_analysis", True)
+        self.llm_system_prompt = self.config.get("llm_system_prompt", "")
+        self.llm_user_prompt = self.config.get("llm_user_prompt", "")
 
         # 加载表情包类别映射
         self.category_mapping = load_json(
@@ -175,19 +177,31 @@ class MemeSender(Star):
         emotions_list = ", ".join(available_emotions)
 
         # 构建系统提示词
-        system_prompt = f"""你是一个专业的群聊语境分析助手。请根据提供的群聊消息历史，分析当前对话的氛围和情绪，选择最合适的表情包类别。
+        default_system_prompt = """你是一个专业的群聊语境分析助手。请根据提供的群聊消息历史，分析当前对话的氛围和情绪，选择最合适的表情包类别。
 
 可用的表情包类别：
 {emotions_list}
 
 请只返回一个类别名称，不要有任何解释。如果无法确定，请返回 "random"。"""
 
+        # 使用自定义提示词或默认提示词
+        if self.llm_system_prompt:
+            system_prompt = self.llm_system_prompt.format(emotions_list=emotions_list)
+        else:
+            system_prompt = default_system_prompt.format(emotions_list=emotions_list)
+
         # 构建用户提示词
-        user_prompt = f"""请分析以下群聊消息，选择最合适的表情包类别：
+        default_user_prompt = """请分析以下群聊消息，选择最合适的表情包类别：
 
 {context_text}
 
 最合适的类别是："""
+
+        # 使用自定义提示词或默认提示词
+        if self.llm_user_prompt:
+            user_prompt = self.llm_user_prompt.format(context_text=context_text)
+        else:
+            user_prompt = default_user_prompt.format(context_text=context_text)
 
         try:
             # 获取当前会话的 Provider ID

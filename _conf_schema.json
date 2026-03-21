@@ -47,6 +47,18 @@
     "default": true,
     "hint": "开启后，将使用LLM分析群聊语境来选择表情包；关闭则使用关键词匹配"
   },
+  "llm_system_prompt": {
+    "description": "LLM语境分析系统提示词",
+    "type": "string",
+    "default": "",
+    "hint": "自定义LLM分析语境时的系统提示词。留空则使用默认提示词。可用变量：{emotions_list} 表示可用表情包类别列表"
+  },
+  "llm_user_prompt": {
+    "description": "LLM语境分析用户提示词",
+    "type": "string",
+    "default": "",
+    "hint": "自定义LLM分析语境时的用户提示词。留空则使用默认提示词。可用变量：{context_text} 表示群聊消息内容"
+  },
   "convert_static_to_gif": {
     "description": "静态图转GIF发送",
     "type": "bool",
