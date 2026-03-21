@@ -16,6 +16,7 @@ class GroupContextManager:
         self.window_size = window_size
         self.windows: dict[str, deque] = {}  # {group_id: deque([messages])}
         self.counters: dict[str, int] = {}  # {group_id: count}
+        self.processing: dict[str, bool] = {}  # {group_id: is_processing} 防止重复触发
 
     def add_message(self, group_id: str, message: str) -> int:
         """
@@ -51,7 +52,33 @@ class GroupContextManager:
         if group_id not in self.counters:
             return False
 
+        # 如果正在处理中（LLM分析或发送表情包），不触发
+        if self.processing.get(group_id, False):
+            return False
+
         return self.counters[group_id] >= interval
+
+    def set_processing(self, group_id: str, processing: bool):
+        """
+        设置群的处理状态
+
+        Args:
+            group_id: 群号
+            processing: 是否正在处理中
+        """
+        self.processing[group_id] = processing
+
+    def is_processing(self, group_id: str) -> bool:
+        """
+        检查群是否正在处理中
+
+        Args:
+            group_id: 群号
+
+        Returns:
+            是否正在处理中
+        """
+        return self.processing.get(group_id, False)
 
     def reset_counter(self, group_id: str):
         """
@@ -102,6 +129,8 @@ class GroupContextManager:
             del self.windows[group_id]
         if group_id in self.counters:
             del self.counters[group_id]
+        if group_id in self.processing:
+            del self.processing[group_id]
 
     def get_all_groups(self) -> list[str]:
         """

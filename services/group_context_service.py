@@ -63,6 +63,14 @@ class GroupContextService:
         """
         trigger_interval = interval or self.config.trigger_interval
         counter = self.context_manager.counters.get(group_id, 0)
+
+        # 检查是否正在处理中
+        if self.context_manager.is_processing(group_id):
+            logger.debug(
+                f"{LOG_PREFIX} ⏳ 群 {group_id} 正在处理中（LLM分析或发送），跳过计数"
+            )
+            return False
+
         should_trigger = self.context_manager.should_trigger(group_id, trigger_interval)
 
         if should_trigger:
@@ -76,6 +84,32 @@ class GroupContextService:
                 f"计数: {counter}/{trigger_interval}"
             )
         return should_trigger
+
+    def set_processing(self, group_id: str, processing: bool):
+        """设置群的处理状态。
+
+        当 LLM 正在分析或正在发送表情包时，设置为 True 以防止重复触发。
+
+        Args:
+            group_id: 群号
+            processing: 是否正在处理中
+        """
+        self.context_manager.set_processing(group_id, processing)
+        if processing:
+            logger.info(f"{LOG_PREFIX} 🔒 群 {group_id} 进入处理状态，暂停计数")
+        else:
+            logger.info(f"{LOG_PREFIX} 🔓 群 {group_id} 退出处理状态，恢复计数")
+
+    def is_processing(self, group_id: str) -> bool:
+        """检查群是否正在处理中。
+
+        Args:
+            group_id: 群号
+
+        Returns:
+            是否正在处理中
+        """
+        return self.context_manager.is_processing(group_id)
 
     def reset_counter(self, group_id: str):
         """重置指定群的消息计数器。

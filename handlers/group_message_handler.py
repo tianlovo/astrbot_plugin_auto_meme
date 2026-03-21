@@ -130,6 +130,9 @@ class GroupMessageHandler(BaseHandler):
             f"🎲 概率判定通过 | 随机数: {roll} | 阈值: {self.config.trigger_probability}"
         )
 
+        # 设置处理状态，防止重复触发
+        self.context_service.set_processing(group_id, True)
+
         try:
             # 获取语境并分析
             context = self.context_service.get_context(group_id)
@@ -161,6 +164,9 @@ class GroupMessageHandler(BaseHandler):
             import traceback
             self.log_debug(f"错误堆栈:\n{traceback.format_exc()}")
             return False
+        finally:
+            # 无论成功或失败，都退出处理状态
+            self.context_service.set_processing(group_id, False)
 
     def update_config(self, config: BasicConfig):
         """更新配置。
