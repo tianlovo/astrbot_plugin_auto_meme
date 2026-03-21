@@ -1,15 +1,17 @@
 name: 自动meme
-desc: anka - 自动表情包 - 基于群聊语境主动发送表情包。支持滑动窗口机制、LLM智能语境分析、QQ群白名单、WebUI管理后台等功能。
+desc: anka - 自动表情包 - 基于群聊语境主动发送表情包。支持滑动窗口机制、LLM智能语境分析、QQ群白名单、WebUI管理后台、时间限制等功能。
 help: |
   功能包含：
   1. 基于群聊语境自动发送表情包（滑动窗口 + LLM分析）
   2. WebUI 管理后台 - 查看图库、添加表情、图库统计
-  
+  3. 时间限制 - morning/sleep 类别在特定时段才可发送
+
   配置说明：
   - 仅支持 aiocqhttp 适配器（QQ个人号）
   - 可配置 QQ 群白名单
   - 支持自定义 LLM 提示词
+  - 可配置时区（默认 Asia/Shanghai）
   - WebUI 访问地址: http://localhost:5000（可配置端口）
-version: v4.1.4
+version: v4.1.5
 author: anka,tianluoqaq
 repo: https://github.com/tianlovo/astrbot_plugin_auto_meme

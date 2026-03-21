@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [4.1.5] - 2026-03-21
+
+### ✨ 新增
+
+- **时间限制功能**: 为 `morning` 和 `sleep` 类别添加时间限制
+  - `morning`（早安）：仅在 06:00-11:59 可发送
+  - `sleep`（睡觉）：仅在 21:00-02:59 可发送
+  - 可配置时区（默认 Asia/Shanghai）
+- **LLM 提示词注入当前时间**: 帮助 LLM 更好地选择时间相关的表情包
+
+### 🔧 变更
+
+- **群聊消息格式**: 消息内容添加用户名前缀，格式为 `用户名：消息内容`
+
 ## [4.1.4] - 2026-03-21
 
 ### 🗑️ 移除
