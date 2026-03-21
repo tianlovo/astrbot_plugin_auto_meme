@@ -165,8 +165,10 @@ class GroupMessageHandler(BaseHandler):
             self.log_debug(f"错误堆栈:\n{traceback.format_exc()}")
             return False
         finally:
-            # 无论成功或失败，都退出处理状态
+            # 无论成功或失败，都退出处理状态并重置计数器
             self.context_service.set_processing(group_id, False)
+            self.context_service.reset_counter(group_id)
+            self.log_debug(f"🔄 群 {group_id} 处理完成，计数器已重置")
 
     def update_config(self, config: BasicConfig):
         """更新配置。
