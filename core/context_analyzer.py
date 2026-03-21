@@ -208,7 +208,9 @@ class ContextAnalyzer:
             logger.debug(f"{LOG_PREFIX} 🤖 LLM 原始响应: {raw_result}")
 
             # 清理 <think> 标签及其内容（某些模型会输出思考过程）
+            # 处理两种情况：1. 完整的 <think>...</think>  2. 只有 </think> 结束标签
             result = re.sub(r"<think>.*?</think>", "", raw_result, flags=re.DOTALL)
+            result = re.sub(r"</think>", "", result)
 
             # 转换为小写并清理非字母数字字符
             result = result.lower()
