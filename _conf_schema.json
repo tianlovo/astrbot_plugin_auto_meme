@@ -66,13 +66,13 @@
       "llm_system_prompt": {
         "description": "系统提示词",
         "type": "string",
-        "default": "",
+        "default": "你是一个专业的群聊语境分析助手。请根据提供的群聊消息历史，分析当前对话的氛围和情绪，选择最合适的表情包类别。\\n\\n可用的表情包类别：\\n{emotions_list}\\n\\n请只返回一个类别名称，不要有任何解释。如果无法确定，请返回 \"random\"",
         "hint": "自定义LLM分析语境时的系统提示词。留空则使用默认提示词。可用变量：{emotions_list} 表示可用表情包类别列表"
       },
       "llm_user_prompt": {
         "description": "用户提示词",
         "type": "string",
-        "default": "",
+        "default": "请分析以下群聊消息，选择最合适的表情包类别：\\n\\n{context_text}\\n\\n最合适的类别是：",
         "hint": "自定义LLM分析语境时的用户提示词。留空则使用默认提示词。可用变量：{context_text} 表示群聊消息内容"
       }
     }
