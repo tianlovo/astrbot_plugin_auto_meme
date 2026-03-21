@@ -28,7 +28,7 @@ from .utils.common import load_json
 from .webui import start_server
 
 
-@register("meme_auto", "anka", "anka - 自动表情包 - 基于群聊语境主动发送", "4.1.1")
+@register("meme_auto", "anka", "anka - 自动表情包 - 基于群聊语境主动发送", "4.1.2")
 class MemeAutoPlugin(Star):
     """自动表情包插件主类。
 

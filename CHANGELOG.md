@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [4.1.2] - 2026-03-21
+
+### ✨ 新增
+
+- **WebUI 管理后台**: 添加表情包管理前端页面
+  - 支持通过 WebUI 查看和管理表情包
+  - 可配置端口号（默认 5000）
+  - 可配置登录密钥（默认 `meme_auto`）
+
+### 🔧 变更
+
+- **配置结构**: 将 WebUI 配置独立为 `webui` 分类
+  - `webui_port`: WebUI 端口号
+  - `webui_key`: WebUI 登录密钥
+
 ## [4.1.1] - 2026-03-21
 
 ### 🐛 修复
