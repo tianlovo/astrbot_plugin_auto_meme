@@ -11,6 +11,6 @@ help: |
   - 仅支持 aiocqhttp 适配器（QQ个人号）
   - 可配置 QQ 群白名单
   - 支持自定义 LLM 提示词
-version: v4.1.2
+version: v4.1.3
 author: anka,tianluoqaq
 repo: https://github.com/tianlovo/astrbot_plugin_auto_meme

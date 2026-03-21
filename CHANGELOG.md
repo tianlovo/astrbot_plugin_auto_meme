@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [4.1.3] - 2026-03-21
+
+### 🐛 修复
+
+- **变量未定义**: 修复 `available_emotions` 变量未定义错误
+- **LLM 响应解析**: 改进响应解析逻辑，提取最后一行作为类别名称
+- **无效类别过滤**: 更好地处理模型返回的无效内容（如 `startup`）
+
+### 🔧 变更
+
+- **提示词优化**: 简化 LLM 提示词以节省 token，强调仅返回类别名称
+
 ## [4.1.2] - 2026-03-21
 
 ### ✨ 新增
