@@ -145,6 +145,31 @@ async def delete_category():
         return jsonify({"message": f"Failed to delete category: {str(e)}"}), 500
 
 
+@api.route("/category/clear", methods=["POST"])
+async def clear_category():
+    """清空表情包类别下的所有表情包"""
+    try:
+        data = await request.get_json()
+
+        category = data.get("category")
+        if not category:
+            return jsonify({"message": "Category is required"}), 400
+
+        plugin_config = current_app.config.get("PLUGIN_CONFIG", {})
+        category_manager = plugin_config.get("category_manager")
+
+        if not category_manager:
+            return jsonify({"message": "Category manager not found"}), 404
+
+        # 清空类别下的所有表情包
+        if category_manager.clear_category(category):
+            return jsonify({"message": "Category cleared successfully"}), 200
+        else:
+            return jsonify({"message": "Failed to clear category"}), 500
+    except Exception as e:
+        return jsonify({"message": f"Failed to clear category: {str(e)}"}), 500
+
+
 @api.route("/sync/status", methods=["GET"])
 async def get_sync_status():
     """获取同步状态"""

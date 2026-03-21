@@ -102,6 +102,30 @@ class CategoryManager:
             logger.error(f"删除类别失败: {e}")
             return False
 
+    def clear_category(self, category: str) -> bool:
+        """清空类别下的所有表情包"""
+        try:
+            category_path = os.path.join(MEMES_DIR, category)
+            if not os.path.exists(category_path):
+                logger.warning(f"类别 {category} 不存在，无需清空")
+                return True
+
+            # 删除类别文件夹下的所有文件
+            for filename in os.listdir(category_path):
+                file_path = os.path.join(category_path, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                        logger.debug(f"删除文件: {file_path}")
+                except Exception as e:
+                    logger.error(f"删除文件失败 {file_path}: {e}")
+
+            logger.info(f"类别 {category} 已清空")
+            return True
+        except Exception as e:
+            logger.error(f"清空类别失败: {e}")
+            return False
+
     def get_descriptions(self) -> dict[str, str]:
         """获取所有类别描述"""
         return self.descriptions.copy()  # 返回字典的副本

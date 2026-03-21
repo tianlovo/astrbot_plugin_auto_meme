@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="category-name" id="category-name-${category}">${category}</div>
                 <div class="category-actions">
                     <button class="edit-category-btn" onclick="editCategory('${category}')">编辑类别</button>
+                    <button class="clear-category-btn" data-category="${category}">清空类别</button>
                     <button class="delete-category-btn" data-category="${category}">删除类别</button>
                 </div>
             </div>
@@ -55,6 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // 删除类别按钮的事件监听器
       const deleteBtn = titleDiv.querySelector(".delete-category-btn");
       deleteBtn.addEventListener("click", () => deleteCategory(category));
+
+      // 清空类别按钮的事件监听器
+      const clearBtn = titleDiv.querySelector(".clear-category-btn");
+      clearBtn.addEventListener("click", () => clearCategory(category));
 
       const emojiGrid = document.createElement("div");
       emojiGrid.className = "emoji-grid";
@@ -323,6 +328,46 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("删除分类失败:", error);
       alert("删除分类失败: " + error.message);
+    }
+  }
+
+  // 清空表情包类别
+  async function clearCategory(category) {
+    if (
+      !confirm(
+        `确定要清空分类 "${category}" 下的所有表情包吗？此操作不可恢复！`
+      )
+    ) {
+      return;
+    }
+
+    if (
+      !confirm(
+        `请再次确认：清空 "${category}" 类别下的所有表情包？`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/category/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category }),
+      });
+
+      if (!response.ok) {
+        throw new Error("清空分类失败");
+      }
+
+      const data = await response.json();
+      alert(`清空分类成功: ${data.message}`);
+
+      // 重新加载数据
+      fetchEmojis();
+    } catch (error) {
+      console.error("清空分类失败:", error);
+      alert("清空分类失败: " + error.message);
     }
   }
 
