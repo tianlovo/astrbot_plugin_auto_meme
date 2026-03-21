@@ -96,14 +96,17 @@ class MemeSender(Star):
         window_size = self.config.get("window_size", 30)
         self.group_context = GroupContextManager(window_size=window_size)
 
-        # 读取配置
-        self.enabled_groups = self.config.get("enabled_groups", [])
-        self.trigger_interval = self.config.get("trigger_interval", 5)
-        self.trigger_probability = self.config.get("trigger_probability", 50)
-        self.convert_static_to_gif = self.config.get("convert_static_to_gif", False)
-        self.use_llm_analysis = self.config.get("use_llm_analysis", True)
-        self.llm_system_prompt = self.config.get("llm_system_prompt", "")
-        self.llm_user_prompt = self.config.get("llm_user_prompt", "")
+        # 读取配置（适配父级结构）
+        basic_config = self.config.get("basic", {})
+        self.enabled_groups = basic_config.get("enabled_groups", [])
+        self.trigger_interval = basic_config.get("trigger_interval", 5)
+        self.trigger_probability = basic_config.get("trigger_probability", 50)
+        self.convert_static_to_gif = basic_config.get("convert_static_to_gif", False)
+
+        llm_config = self.config.get("llm_analysis", {})
+        self.use_llm_analysis = llm_config.get("use_llm_analysis", True)
+        self.llm_system_prompt = llm_config.get("llm_system_prompt", "")
+        self.llm_user_prompt = llm_config.get("llm_user_prompt", "")
 
         # 加载表情包类别映射
         self.category_mapping = load_json(

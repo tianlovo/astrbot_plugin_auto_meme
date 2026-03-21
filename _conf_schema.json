@@ -1,68 +1,80 @@
 {
-  "enabled_groups": {
-    "description": "启用的QQ群列表",
-    "type": "list",
-    "hint": "配置可以触发表情包的QQ群号列表，为空则对所有群生效",
-    "default": [],
+  "basic": {
+    "description": "基础配置",
+    "type": "object",
     "items": {
-      "type": "string"
+      "enabled_groups": {
+        "description": "启用的QQ群列表",
+        "type": "list",
+        "hint": "配置可以触发表情包的QQ群号列表，为空则对所有群生效",
+        "default": [],
+        "items": {
+          "type": "string"
+        }
+      },
+      "window_size": {
+        "description": "滑动窗口大小",
+        "type": "int",
+        "default": 30,
+        "hint": "记录多少条群消息用于语境分析",
+        "slider": {
+          "min": 10,
+          "max": 100,
+          "step": 5
+        }
+      },
+      "trigger_interval": {
+        "description": "触发间隔（消息数）",
+        "type": "int",
+        "default": 5,
+        "hint": "每收到多少条消息进行一次概率判断",
+        "slider": {
+          "min": 1,
+          "max": 20,
+          "step": 1
+        }
+      },
+      "trigger_probability": {
+        "description": "触发概率",
+        "type": "int",
+        "default": 50,
+        "hint": "满足触发条件时发送表情包的概率，范围为1-100",
+        "slider": {
+          "min": 1,
+          "max": 100,
+          "step": 10
+        }
+      },
+      "convert_static_to_gif": {
+        "description": "静态图转GIF发送",
+        "type": "bool",
+        "default": false,
+        "hint": "开启后，发送静态图片表情时会将其转换为1帧的GIF格式"
+      }
     }
   },
-  "window_size": {
-    "description": "滑动窗口大小",
-    "type": "int",
-    "default": 30,
-    "hint": "记录多少条群消息用于语境分析",
-    "slider": {
-      "min": 10,
-      "max": 100,
-      "step": 5
+  "llm_analysis": {
+    "description": "LLM语境分析配置",
+    "type": "object",
+    "items": {
+      "use_llm_analysis": {
+        "description": "使用LLM分析语境",
+        "type": "bool",
+        "default": true,
+        "hint": "开启后，将使用LLM分析群聊语境来选择表情包；关闭则使用关键词匹配"
+      },
+      "llm_system_prompt": {
+        "description": "系统提示词",
+        "type": "string",
+        "default": "",
+        "hint": "自定义LLM分析语境时的系统提示词。留空则使用默认提示词。可用变量：{emotions_list} 表示可用表情包类别列表"
+      },
+      "llm_user_prompt": {
+        "description": "用户提示词",
+        "type": "string",
+        "default": "",
+        "hint": "自定义LLM分析语境时的用户提示词。留空则使用默认提示词。可用变量：{context_text} 表示群聊消息内容"
+      }
     }
-  },
-  "trigger_interval": {
-    "description": "触发间隔（消息数）",
-    "type": "int",
-    "default": 5,
-    "hint": "每收到多少条消息进行一次概率判断",
-    "slider": {
-      "min": 1,
-      "max": 20,
-      "step": 1
-    }
-  },
-  "trigger_probability": {
-    "description": "触发概率",
-    "type": "int",
-    "default": 50,
-    "hint": "满足触发条件时发送表情包的概率，范围为1-100",
-    "slider": {
-      "min": 1,
-      "max": 100,
-      "step": 10
-    }
-  },
-  "use_llm_analysis": {
-    "description": "使用LLM分析语境",
-    "type": "bool",
-    "default": true,
-    "hint": "开启后，将使用LLM分析群聊语境来选择表情包；关闭则使用关键词匹配"
-  },
-  "llm_system_prompt": {
-    "description": "LLM语境分析系统提示词",
-    "type": "string",
-    "default": "",
-    "hint": "自定义LLM分析语境时的系统提示词。留空则使用默认提示词。可用变量：{emotions_list} 表示可用表情包类别列表"
-  },
-  "llm_user_prompt": {
-    "description": "LLM语境分析用户提示词",
-    "type": "string",
-    "default": "",
-    "hint": "自定义LLM分析语境时的用户提示词。留空则使用默认提示词。可用变量：{context_text} 表示群聊消息内容"
-  },
-  "convert_static_to_gif": {
-    "description": "静态图转GIF发送",
-    "type": "bool",
-    "default": false,
-    "hint": "开启后，发送静态图片表情时会将其转换为1帧的GIF格式"
   }
 }
