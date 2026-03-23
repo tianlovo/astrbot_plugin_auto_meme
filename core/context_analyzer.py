@@ -35,6 +35,7 @@ class ContextAnalyzer:
         _system_prompt: 自定义系统提示词
         _user_prompt: 自定义用户提示词
         _timezone: 时区设置
+        _llm_provider_id: 指定的 LLM Provider ID
     """
 
     def __init__(
@@ -45,6 +46,7 @@ class ContextAnalyzer:
         system_prompt: str = "",
         user_prompt: str = "",
         timezone: str = "Asia/Shanghai",
+        llm_provider_id: str = "",
     ):
         """初始化语境分析器。
 
@@ -55,6 +57,7 @@ class ContextAnalyzer:
             system_prompt: 自定义系统提示词，为空则使用默认提示词
             user_prompt: 自定义用户提示词，为空则使用默认提示词
             timezone: 时区设置，默认为 Asia/Shanghai
+            llm_provider_id: 指定的 LLM Provider ID，为空则使用当前会话的 Provider
         """
         self._astrbot_context = astrbot_context
         self._category_mapping = category_mapping
@@ -62,9 +65,11 @@ class ContextAnalyzer:
         self._system_prompt = system_prompt
         self._user_prompt = user_prompt
         self._timezone = timezone
+        self._llm_provider_id = llm_provider_id
 
+        provider_info = f"Provider: {llm_provider_id if llm_provider_id else '自动'}"
         logger.info(
-            f"{LOG_PREFIX} 语境分析器已初始化，使用策略: {'LLM' if use_llm_analysis else '关键词'}"
+            f"{LOG_PREFIX} 语境分析器已初始化，使用策略: {'LLM' if use_llm_analysis else '关键词'}, {provider_info}"
         )
 
     async def analyze(self, event: AstrMessageEvent, messages: list[str]) -> str:
@@ -204,11 +209,8 @@ class ContextAnalyzer:
             logger.debug(f"{LOG_PREFIX} 📝 使用默认用户提示词")
 
         try:
-            # 获取当前会话的 Provider ID
-            umo = event.unified_msg_origin
-            provider_id = await self._astrbot_context.get_current_chat_provider_id(
-                umo=umo
-            )
+            # 获取 Provider ID（优先使用配置的，否则使用当前会话的）
+            provider_id = await self._get_provider_id(event)
 
             if not provider_id:
                 logger.warning(f"{LOG_PREFIX} ⚠️ 无法获取 LLM provider ID，回退到关键词分析")
@@ -296,6 +298,39 @@ class ContextAnalyzer:
         self._system_prompt = system_prompt
         self._user_prompt = user_prompt
         logger.debug(f"{LOG_PREFIX} LLM 提示词已更新")
+
+    async def _get_provider_id(self, event: AstrMessageEvent) -> str | None:
+        """获取 LLM Provider ID。
+
+        优先使用配置的 Provider ID，如果未配置或无效则使用当前会话的 Provider。
+
+        Args:
+            event: 消息事件对象
+
+        Returns:
+            Provider ID 或 None
+        """
+        # 如果配置了特定的 Provider ID，先尝试使用它
+        if self._llm_provider_id:
+            # 检查配置的 Provider 是否存在
+            provider = self._astrbot_context.get_provider_by_id(self._llm_provider_id)
+            if provider:
+                logger.debug(f"{LOG_PREFIX} 使用配置的 Provider: {self._llm_provider_id}")
+                return self._llm_provider_id
+            else:
+                logger.warning(
+                    f"{LOG_PREFIX} 配置的 Provider '{self._llm_provider_id}' 不存在，"
+                    f"将尝试使用当前会话的 Provider"
+                )
+
+        # 回退到当前会话的 Provider
+        try:
+            umo = event.unified_msg_origin
+            provider_id = await self._astrbot_context.get_current_chat_provider_id(umo=umo)
+            return provider_id
+        except Exception as e:
+            logger.warning(f"{LOG_PREFIX} 获取当前会话 Provider ID 失败: {e}")
+            return None
 
     def update_category_mapping(self, category_mapping: dict[str, str]) -> None:
         """更新表情包类别映射。

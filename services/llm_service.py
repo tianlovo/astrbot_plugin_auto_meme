@@ -162,7 +162,9 @@ class LLMService:
         return selected
 
     async def _get_provider_id(self, event: AstrMessageEvent) -> str | None:
-        """获取当前会话的 Provider ID。
+        """获取 LLM Provider ID。
+
+        优先使用配置的 Provider ID，如果未配置或无效则使用当前会话的 Provider。
 
         Args:
             event: 消息事件对象
@@ -170,11 +172,26 @@ class LLMService:
         Returns:
             Provider ID 或 None
         """
+        # 如果配置了特定的 Provider ID，先尝试使用它
+        if self.config.llm_provider_id:
+            # 检查配置的 Provider 是否存在
+            provider = self.context.get_provider_by_id(self.config.llm_provider_id)
+            if provider:
+                logger.debug(f"{LOG_PREFIX} 使用配置的 Provider: {self.config.llm_provider_id}")
+                return self.config.llm_provider_id
+            else:
+                logger.warning(
+                    f"{LOG_PREFIX} 配置的 Provider '{self.config.llm_provider_id}' 不存在，"
+                    f"将尝试使用当前会话的 Provider"
+                )
+
+        # 回退到当前会话的 Provider
         try:
             umo = event.unified_msg_origin
-            return await self.context.get_current_chat_provider_id(umo=umo)
+            provider_id = await self.context.get_current_chat_provider_id(umo=umo)
+            return provider_id
         except Exception as e:
-            logger.warning(f"{LOG_PREFIX} 获取 provider ID 失败: {e}")
+            logger.warning(f"{LOG_PREFIX} 获取当前会话 Provider ID 失败: {e}")
             return None
 
     def _get_random_emotion(self) -> str:

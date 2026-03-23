@@ -80,6 +80,13 @@
         "type": "string",
         "default": "请分析以下群聊消息，选择最合适的表情包类别：\\n\\n{context_text}\\n\\n最合适的类别是：",
         "hint": "自定义LLM分析语境时的用户提示词。留空则使用默认提示词。可用变量：{context_text} 表示群聊消息内容"
+      },
+      "llm_provider_id": {
+        "description": "LLM Provider",
+        "type": "string",
+        "default": "",
+        "hint": "选择用于语境分析的LLM Provider。留空则使用当前会话的Provider",
+        "_special": "select_provider"
       }
     }
   },

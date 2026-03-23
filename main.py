@@ -92,7 +92,8 @@ class MemeAutoPlugin(Star):
             use_llm_analysis=llm_config.use_llm_analysis,
             system_prompt=llm_config.system_prompt,
             user_prompt=llm_config.user_prompt,
-            timezone=basic_config.timezone
+            timezone=basic_config.timezone,
+            llm_provider_id=llm_config.llm_provider_id
         )
 
         # 初始化处理器
