@@ -12,6 +12,6 @@ help: |
   - 支持自定义 LLM 提示词
   - 可配置时区（默认 Asia/Shanghai）
   - WebUI 访问地址: http://localhost:5000（可配置端口）
-version: v4.1.5
+version: v4.2.0
 author: anka,tianluoqaq
 repo: https://github.com/tianlovo/astrbot_plugin_auto_meme
