@@ -47,6 +47,7 @@ class ContextAnalyzer:
         user_prompt: str = "",
         timezone: str = "Asia/Shanghai",
         llm_provider_id: str = "",
+        debug_prompt: bool = False,
     ):
         """初始化语境分析器。
 
@@ -58,6 +59,7 @@ class ContextAnalyzer:
             user_prompt: 自定义用户提示词，为空则使用默认提示词
             timezone: 时区设置，默认为 Asia/Shanghai
             llm_provider_id: 指定的 LLM Provider ID，为空则使用当前会话的 Provider
+            debug_prompt: 是否打印完整提示词到日志
         """
         self._astrbot_context = astrbot_context
         self._category_mapping = category_mapping
@@ -66,6 +68,7 @@ class ContextAnalyzer:
         self._user_prompt = user_prompt
         self._timezone = timezone
         self._llm_provider_id = llm_provider_id
+        self._debug_prompt = debug_prompt
 
         provider_info = f"Provider: {llm_provider_id if llm_provider_id else '自动'}"
         logger.info(
@@ -207,6 +210,11 @@ class ContextAnalyzer:
         else:
             user_prompt = DEFAULT_USER_PROMPT.format(context_text=context_text)
             logger.debug(f"{LOG_PREFIX} 📝 使用默认用户提示词")
+
+        # 如果开启调试模式，打印完整提示词
+        if self._debug_prompt:
+            logger.info(f"{LOG_PREFIX} 🔍 [调试模式] 完整系统提示词:\n{'='*50}\n{system_prompt}\n{'='*50}")
+            logger.info(f"{LOG_PREFIX} 🔍 [调试模式] 完整用户提示词:\n{'='*50}\n{user_prompt}\n{'='*50}")
 
         try:
             # 获取 Provider ID（优先使用配置的，否则使用当前会话的）

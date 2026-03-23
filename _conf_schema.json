@@ -87,6 +87,12 @@
         "default": "",
         "hint": "选择用于语境分析的LLM Provider。留空则使用当前会话的Provider",
         "_special": "select_provider"
+      },
+      "debug_prompt": {
+        "description": "打印完整提示词",
+        "type": "bool",
+        "default": false,
+        "hint": "开启后，将在日志中打印发送给LLM的完整系统提示词和用户提示词，用于调试"
       }
     }
   },

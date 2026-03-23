@@ -99,6 +99,11 @@ class LLMService:
         else:
             user_prompt = DEFAULT_USER_PROMPT.format(context_text=context_text)
 
+        # 如果开启调试模式，打印完整提示词
+        if self.config.debug_prompt:
+            logger.info(f"{LOG_PREFIX} 🔍 [调试模式] 完整系统提示词:\n{'='*50}\n{system_prompt}\n{'='*50}")
+            logger.info(f"{LOG_PREFIX} 🔍 [调试模式] 完整用户提示词:\n{'='*50}\n{user_prompt}\n{'='*50}")
+
         try:
             provider_id = await self._get_provider_id(event)
             if not provider_id:

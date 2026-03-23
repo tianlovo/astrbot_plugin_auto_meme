@@ -83,12 +83,14 @@ class LLMConfig:
         system_prompt: 自定义系统提示词
         user_prompt: 自定义用户提示词
         llm_provider_id: LLM Provider ID，为空则使用当前会话的Provider
+        debug_prompt: 是否打印完整提示词到日志
     """
 
     use_llm_analysis: bool
     system_prompt: str
     user_prompt: str
     llm_provider_id: str
+    debug_prompt: bool
 
     @classmethod
     def from_dict(cls, config: dict) -> "LLMConfig":
@@ -105,6 +107,7 @@ class LLMConfig:
             system_prompt=config.get("llm_system_prompt", ""),
             user_prompt=config.get("llm_user_prompt", ""),
             llm_provider_id=config.get("llm_provider_id", ""),
+            debug_prompt=config.get("debug_prompt", False),
         )
 
 
